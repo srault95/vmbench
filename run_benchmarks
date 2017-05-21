@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 import argparse
 import collections
 import datetime
@@ -172,32 +171,64 @@ benchmarks = [{
 }, {
     'name': 'http-asyncio-aiohttp',
     'title': 'HTTP server (asyncio/aiohttp)',
-    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+    'server': python + ['/usr/src/servers/aio_http_server.py',
                         '--type=asyncio+aiohttp',
                         '--addr=0.0.0.0:25000'],
     'server_address': tcp_address,
     'client': http_client,
-}, {
-    'name': 'http-asyncio-httptools',
-    'title': 'HTTP server (asyncio/httptools)',
-    'server': python + ['/usr/src/servers/asyncio_http_server.py',
-                        '--type=asyncio+httptools',
-                        '--addr=0.0.0.0:25000'],
-    'server_address': tcp_address,
-    'client': http_client,
-}, {
+}, 
+#{
+#    'name': 'http-asyncio-httptools',
+#    'title': 'HTTP server (asyncio/httptools)',
+#    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+#                        '--type=asyncio+httptools',
+#                        '--addr=0.0.0.0:25000'],
+#    'server_address': tcp_address,
+#    'client': http_client,
+{
     'name': 'http-uvloop-aiohttp',
     'title': 'HTTP server (uvloop/aiohttp)',
-    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+    'server': python + ['/usr/src/servers/aio_http_server.py',
                         '--type=uvloop+aiohttp',
                         '--addr=0.0.0.0:25000'],
     'server_address': tcp_address,
     'client': http_client,
+}, 
+#{
+#    'name': 'http-uvloop-httptools',
+#    'title': 'HTTP server (uvloop/httptools)',
+#    'server': python + ['/usr/src/servers/asyncio_http_server.py',
+#                        '--type=uvloop+httptools',
+#                        '--addr=0.0.0.0:25000'],
+#    'server_address': tcp_address,
+#    'client': http_client,
+#}, 
+{
+    'name': 'http-sanic',
+    'title': 'HTTP server (sanic)',
+    'server': python + ['/usr/src/servers/sanic_http_server.py',
+                        '--addr=0.0.0.0:25000'],
+    'server_address': tcp_address,
+    'client': http_client,
 }, {
-    'name': 'http-uvloop-httptools',
-    'title': 'HTTP server (uvloop/httptools)',
-    'server': python + ['/usr/src/servers/asyncio_http_server.py',
-                        '--type=uvloop+httptools',
+    'name': 'http-sanic-workers',
+    'title': 'HTTP server (sanic workers)',
+    'server': python + ['/usr/src/servers/sanic_http_server.py',
+                        '--addr=0.0.0.0:25000',
+                        '--worker=4'],
+    'server_address': tcp_address,
+    'client': http_client,
+}, {
+    'name': 'http-gevent-wsgi',
+    'title': 'HTTP server (gevent/wsgi)',
+    'server': python + ['/usr/src/servers/gevent_http_server.py',
+                        '--addr=0.0.0.0:25000'],
+    'server_address': tcp_address,
+    'client': http_client,
+}, {
+    'name': 'http-gevent-flask',
+    'title': 'HTTP server (gevent/flask)',
+    'server': python + ['/usr/src/servers/gevent_http_flask.py',
                         '--addr=0.0.0.0:25000'],
     'server_address': tcp_address,
     'client': http_client,
@@ -297,7 +328,7 @@ def kill_server():
 
     if server_container_exists():
         print('Removing server container...')
-        subprocess.check_output(['docker', 'rm', 'magicbench'])
+        subprocess.check_output(['docker', 'rm', '-f', 'magicbench'])
 
 
 def format_report(data, target_file):
