@@ -1,34 +1,27 @@
-FROM ubuntu:16.04
-MAINTAINER elvis@magic.io
+FROM python:3.5
 
-RUN DEBIAN_FRONTEND=noninteractive \
-        apt-get update && apt-get install -y \
-            language-pack-en
-
-ENV LANG en_US.UTF-8
 ENV WORKON_HOME /usr/local/python-venvs
+ENV GOPATH /usr/go/
 ENV GOMAXPROCS 1
 
-RUN mkdir -p /usr/local/python-venvs
-RUN mkdir -p /usr/go/
-ENV GOPATH /usr/go/
-
-RUN DEBIAN_FRONTEND=noninteractive \
-        apt-get update && apt-get install -y \
-            autoconf automake libtool build-essential \
-            python3 python3-pip git nodejs golang gosu
-
-RUN pip3 install vex
-RUN vex --python=python3.5 -m bench pip install -U pip
-RUN mkdir -p /var/lib/cache/pip
-
 ADD servers /usr/src/servers
-RUN cd /usr/src/servers && go build goecho.go && \
-        go get github.com/golang/groupcache/lru && go build gohttp.go
-RUN vex bench pip --cache-dir=/var/lib/cache/pip \
-        install -r /usr/src/servers/requirements.txt
 
-RUN vex bench pip freeze -r /usr/src/servers/requirements.txt
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y \
+	autoconf automake libtool build-essential nodejs golang
+
+RUN mkdir -p /usr/local/python-venvs \
+   && mkdir -p /usr/go \
+   && pip3 install vex \
+   && vex --python=python3.5 -m bench pip install -U pip \
+   && mkdir -p /var/lib/cache/pip \
+   && vex bench pip --cache-dir=/var/lib/cache/pip install -r /usr/src/servers/requirements.txt \
+   && vex bench pip freeze -r /usr/src/servers/requirements.txt \
+   && curl -L -o /usr/local/bin/gosu https://github.com/tianon/gosu/releases/download/1.10/gosu-$(dpkg --print-architecture | awk -F- '{ print $NF }') \
+   && chmod +x /usr/local/bin/gosu \
+   && cd /usr/src/servers \
+   && go build goecho.go \
+   && go get github.com/golang/groupcache/lru \
+   && go build gohttp.go
 
 EXPOSE 25000
 
